@@ -12,12 +12,12 @@ class IRCClient:
         self.nickname = nickname
         self.active_channel = None
         self.channels = []
-        self.users = {}
+        self.users = []
 
     def connect(self):
         self.socket.connect((self.server, self.port))
 
-    def set_nickname(self):
+    def auth(self):
         self.send_data('NICK', self.nickname)
         self.send_data('USER', f"{self.nickname} 0 * :{self.nickname}")
 
@@ -36,6 +36,7 @@ class IRCClient:
         return self.socket.recv(2048).decode('utf-8')
 
     def join_channel(self, channel_name):
+        self.users = []
         self.send_data('JOIN', channel_name)
         self.active_channel = channel_name
         if channel_name not in self.channels:
@@ -55,10 +56,7 @@ class IRCClient:
 
             elif " 353 " in message:
                 parts = message.split()
-                channel = parts[4]
-                users = parts[5:]
-                self.users[channel] = users
-            # TODO: обработка других сообщений
+                # self.users += message
             print(message)
 
     def start_listening(self):
@@ -67,3 +65,6 @@ class IRCClient:
 
     def get_channels(self):
         self.send_data('LIST')
+
+    def is_connected(self):
+        return self.socket and self.socket.fileno() != -1

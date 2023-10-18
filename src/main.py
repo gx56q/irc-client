@@ -7,13 +7,22 @@ def main():
     port = 6667
     nickname = 'web-43'
     client = IRCClient.IRCClient(nickname, server, port)
+    print('Connecting to server...')
     client.connect()
+    print('Starting listening thread...')
     client.start_listening()
-    client.set_nickname()
+    print('Authenticating...')
+    client.auth()
     time.sleep(5)
+    print('Joining channel...')
     client.join_channel('#freenode')
+    time.sleep(5)
+    print('Users in channel:')
+    print(client.users)
+    print('Getting channels...')
     client.get_channels()
-    client.send_message('Hello, world!')
+    # print('Sending message...')
+    # client.send_message('Hello, world!')
 
 
 if __name__ == '__main__':
