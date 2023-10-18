@@ -5,7 +5,7 @@
   </a>
 </p>
 
-> Utility for working with IRC servers
+> Simple IRC-client
 
 ## Installation
 To use IRC-client, follow these steps:
