@@ -36,7 +36,7 @@ class IRCClient:
 
     def get_response(self):
         try:
-            return self.socket.recv(1024).decode('utf-8', errors='ignore')
+            return self.socket.recv(2048).decode('utf-8', errors='ignore')
         except UnicodeDecodeError:
             return ''
 
@@ -44,13 +44,13 @@ class IRCClient:
         self.send_data('JOIN', channel_name)
 
     def send_message(self, channel, message):
-        max_message_length = 250
+        max_message_length = 400
         message_chunks = [message[i:i + max_message_length] for i in
                           range(0, len(message), max_message_length)]
 
         for chunk in message_chunks:
             self.send_data('PRIVMSG', f"{channel} :{chunk}")
-            time.sleep(0.5)
+            time.sleep(0.3)
 
     def change_nick(self, new_nick):
         self.send_data('NICK', new_nick)

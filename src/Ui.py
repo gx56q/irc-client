@@ -1,13 +1,12 @@
 from tkinter import *
 from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
-from src import IRCClient
+from src import IRCClient, emoticons
 import time
 import configparser
 
 DEFAULT_SERVER_IP = 'chat.freenode.net'
 SETTINGS_FILE = '../settings.ini'
-
 
 class Window(Frame):
     def __init__(self, master):
@@ -31,8 +30,12 @@ class Window(Frame):
 
     def show_user_popup(self):
         self.user_popup = Toplevel(self.master)
+        self.user_popup.transient(self.master)
+
         self.center_window(self.user_popup, 350, 150)
+
         self.user_popup.resizable(True, False)
+
         self.user_popup.grid_columnconfigure(1, weight=1)
 
         default_server_ip = self.server or DEFAULT_SERVER_IP
@@ -51,7 +54,9 @@ class Window(Frame):
         connect_button = Button(self.user_popup, text='Connect',
                                 command=self.on_connect_button_click)
         connect_button.grid(row=3, columnspan=2, pady=10)
+
         self.user_popup.focus_force()
+        self.user_popup.grab_set()
 
     def on_connect_button_click(self):
         self.server = self.server_entry.get()
@@ -88,13 +93,13 @@ class Window(Frame):
         server_info_frame.grid_rowconfigure(1, weight=3)
         server_info_frame.grid_columnconfigure(0, weight=1)
 
-        text_receive = Text(server_info_frame, height=24, width=47,
-                            wrap=WORD, state=DISABLED, borderwidth=1,
-                            relief="solid")
+        text_receive = ScrolledText(server_info_frame, height=24, width=47,
+                                    wrap=WORD)
         text_receive.grid(sticky=N + S + E + W, padx=(5, 5), pady=(5, 5))
+        text_receive.config(state=DISABLED)
 
-        text_entry = Text(server_info_frame, height=6, width=47, wrap=WORD,
-                          borderwidth=1, relief="solid")
+        text_entry = ScrolledText(server_info_frame, height=6, width=47,
+                                  wrap=WORD)
         text_entry.grid(sticky=N + S + E + W, padx=(5, 5), pady=(5, 5))
         text_entry.bind('<Return>', self.check_pm_commands)
 
@@ -126,15 +131,22 @@ class Window(Frame):
             self.username = self.parser['DEFAULT'].get('username', '')
             self.password = self.parser['DEFAULT'].get('password', '')
 
+    @staticmethod
+    def replace_emoticons(message):
+        for emoticon, unicode_symbol in emoticons.EMOTICON_MAPPING.items():
+            message = message.replace(emoticon, unicode_symbol)
+        return message
+
     def check_pm_commands(self, event):
         tab = self.n.tab(self.n.select(), "text")
         to_text_box = self.tabs[tab]['textbox']
-        message = self.tabs[tab]['entry'].get('1.0', 'end-1c')
+        raw_message = self.tabs[tab]['entry'].get('1.0', 'end-1c')
         self.tabs[tab]['entry'].delete('1.0', END)
         self.tabs[tab]['entry'].focus_force()
-        if len(message) >= 1 and message[0] == '/':
-            self.process_commands(message)
+        if len(raw_message) >= 1 and raw_message[0] == '/':
+            self.process_commands(raw_message)
         else:
+            message = self.replace_emoticons(raw_message)
             self.post_message(self.username + ':>' + message + '\n',
                               to_text_box)
             self.client.send_message(tab, message)
@@ -250,55 +262,52 @@ class Window(Frame):
                 self.n.select(self.tabs[tab_name]['tab'])
                 self.tabs[tab_name]['entry'].focus_force()
 
-    def build_tab(self, tab_name, type):
-        self.tab_name = ttk.Frame(self.n)
-        self.tab_name.grid(row=0, column=0, rowspan=2, sticky=N + S + E + W)
+    def build_tab(self, tab_name, tab_type):
+        tab_frame = ttk.Frame(self.n)
+        tab_frame.grid(row=0, column=0, rowspan=2, sticky=N + S + E + W)
 
-        self.receive_user = ScrolledText(self.tab_name, height=24, width=47,
-                                         wrap=WORD)
-        self.receive_user.grid(row=0, column=0, padx=(10, 0), pady=(10, 5),
-                               sticky=N + S + E + W)
-        self.receive_user.config(state=DISABLED)
+        receive_user = ScrolledText(tab_frame, height=24, width=47, wrap=WORD)
+        receive_user.grid(row=0, column=0, padx=(10, 0), pady=(10, 5),
+                          sticky=N + S + E + W)
+        receive_user.config(state=DISABLED)
 
-        self.pm_Entry = ScrolledText(self.tab_name, height=2, width=47,
-                                     wrap=WORD)
-        self.pm_Entry.grid(row=2, column=0, padx=(10, 0), pady=(0, 10),
-                           sticky=N + S + E + W)
-        self.pm_Entry.bind('<Return>', self.check_pm_commands)
+        pm_entry = ScrolledText(tab_frame, height=6, width=47, wrap=WORD)
+        pm_entry.grid(row=1, column=0, padx=(10, 0), pady=(0, 10),
+                      sticky=N + S + E + W)
+        pm_entry.bind('<Return>', self.check_pm_commands)
 
+        if tab_type == 'channel':
+            pm_users_box = Listbox(tab_frame, width=12)
+            pm_users_box.grid(row=0, column=1, rowspan=2, padx=(0, 10),
+                              pady=(10, 10), sticky=N + S + E + W)
+            pm_users_box.insert(0, 'Online [0]')
 
-        if type == 'channel':
-            self.pm_users_box = Listbox(self.tab_name, width=12)
-            self.pm_users_box.grid(row=0, column=1, rowspan=3, padx=(0, 10),
-                                   pady=(10, 10), sticky=N + S + E + W)
-            self.pm_users_box.insert(0, 'Online [0]')
-
-            self.tabs[tab_name] = {}
-            self.tabs[tab_name]['tab'] = self.tab_name
-            self.tabs[tab_name]['textbox'] = self.receive_user
-            self.tabs[tab_name]['entry'] = self.pm_Entry
-            self.tabs[tab_name]['online_users'] = self.pm_users_box
+            self.tabs[tab_name] = {
+                'tab': tab_frame,
+                'textbox': receive_user,
+                'entry': pm_entry,
+                'online_users': pm_users_box
+            }
             self.client.join_channel(tab_name)
         else:
-            self.pm_Close = Button(self.tab_name, width=7, text='Close tab',
-                                   command=lambda: self.remove_on_close())
-            self.pm_Close.grid(row=0, column=1, padx=(5, 5), pady=(5, 150),
-                               sticky=N + S + E + W)
+            pm_close_button = Button(tab_frame, width=7, text='Close tab',
+                                     command=self.remove_on_close)
+            pm_close_button.grid(row=0, column=1, padx=(5, 5), pady=(5, 150),
+                                 sticky=N + S + E + W)
 
-            self.tabs[tab_name] = {}
-            self.tabs[tab_name]['tab'] = self.tab_name
-            self.tabs[tab_name]['textbox'] = self.receive_user
-            self.tabs[tab_name]['entry'] = self.pm_Entry
-            self.tabs[tab_name]['online_users'] = ''
+            self.tabs[tab_name] = {
+                'tab': tab_frame,
+                'textbox': receive_user,
+                'entry': pm_entry,
+                'online_users': ''
+            }
 
+        Grid.rowconfigure(tab_frame, 0, weight=1)
+        Grid.columnconfigure(tab_frame, 0, weight=1)
 
-        Grid.rowconfigure(self.tab_name, 0, weight=1)
-        Grid.columnconfigure(self.tab_name, 0, weight=1)
-
-
-        self.n.add(self.tab_name, text=tab_name)
-        self.n.select(self.tab_name)
-        self.pm_Entry.focus_force()
+        self.n.add(tab_frame, text=tab_name)
+        self.n.select(tab_frame)
+        pm_entry.focus_force()
 
     def handle_name_change(self, user, line):
         tab_storage = []
