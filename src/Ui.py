@@ -8,6 +8,7 @@ import configparser
 DEFAULT_SERVER_IP = 'chat.freenode.net'
 SETTINGS_FILE = '../settings.ini'
 
+
 class Window(Frame):
     def __init__(self, master):
         Frame.__init__(self, master)
@@ -197,7 +198,6 @@ class Window(Frame):
                 user = line[0].split('!')[0].lstrip(":")
                 self.handle_name_change(user, line)
             elif line[1] == 'NOTICE' and line[2] == self.username:
-                print(line)
                 if '[' in line[3]:
                     get_tab = line[3].split('[')[1].split(']')
                     x = " ".join(line[4:])
@@ -326,7 +326,7 @@ class Window(Frame):
                     self.tabs[tabs]['online_users'].delete(index)
                     self.tabs[tabs]['online_users'].insert(END, new_user[1])
                     self.post_message('*User %s is now known as %s' % (
-                            user, new_user[1]) + '\n', to_box)
+                        user, new_user[1]) + '\n', to_box)
 
     def add_online_user(self, user, tab):
         tab_to_update = self.tabs[tab]['textbox']

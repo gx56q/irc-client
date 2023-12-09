@@ -52,30 +52,24 @@ class IRCClient:
             self.send_data('PRIVMSG', f"{channel} :{chunk}")
             time.sleep(0.3)
 
-    def change_nick(self, new_nick):
-        self.send_data('NICK', new_nick)
-        self.username = new_nick
-
     def leave_channel(self, channel_name):
         self.send_data('PART', channel_name)
 
     def listen(self):
-        while True:
-            (readable, writable, errored) = select([self.socket], [],
-                                                   [self.socket], 0.1)
-            if readable:
-                read_buffer = ""
-                read_buffer += self.get_response()
-                temp = str.split(read_buffer, "\n")
-                temp.pop()
-                for line in temp:
-                    line = str.rstrip(line)
-                    line = str.split(line)
-                    if len(line) >= 1:
-                        if line[0] == 'PING':
-                            self.send_data('PONG', line[1])
-                        else:
-                            self.message_callback(line)
+        (readable, _, _) = select([self.socket], [], [self.socket], 0.1)
+        if readable:
+            read_buffer = ""
+            read_buffer += self.get_response()
+            temp = str.split(read_buffer, "\n")
+            temp.pop()
+            for line in temp:
+                line = str.rstrip(line)
+                line = str.split(line)
+                if len(line) >= 1:
+                    if line[0] == 'PING':
+                        self.send_data('PONG', line[1])
+                    else:
+                        self.message_callback(line)
 
     def start_listening(self):
         self.listen_thread = threading.Thread(target=self.listen)
@@ -84,6 +78,3 @@ class IRCClient:
 
     def get_channels(self):
         self.send_data('LIST')
-
-    def is_connected(self):
-        return self.socket and self.socket.fileno() != -1
