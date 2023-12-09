@@ -51,6 +51,7 @@ class Window(Frame):
         connect_button = Button(self.user_popup, text='Connect',
                                 command=self.on_connect_button_click)
         connect_button.grid(row=3, columnspan=2, pady=10)
+        self.user_popup.focus_force()
 
     def on_connect_button_click(self):
         self.server = self.server_entry.get()
@@ -141,13 +142,13 @@ class Window(Frame):
 
     def process_commands(self, message):
         if '/join' in message:
-            if len(message.split(' ')) == 1:
+            if len(message.strip().split(' ')) == 1:
                 messagebox.showinfo(message='You must specify a channel.',
                                     icon='warning')
             else:
                 tab_name = message.split(' ')[1].lower()
                 self.add_tab(tab_name, 'channel')
-        if '/channels' in message:
+        elif '/channels' in message:
             self.client.get_channels()
         elif '/leave' in message:
             self.leave_channel()
@@ -184,9 +185,17 @@ class Window(Frame):
                 user = line[0].split('!')[0].lstrip(":")
                 self.handle_name_change(user, line)
             elif line[1] == 'NOTICE' and line[2] == self.username:
-                get_tab = line[3].split('[')[1].split(']')
-                x = " ".join(line[4:])
-                self.post_to_tab(get_tab[0].lower(), x + '\n')
+                print(line)
+                if '[' in line[3]:
+                    get_tab = line[3].split('[')[1].split(']')
+                    x = " ".join(line[4:])
+                    self.post_to_tab(get_tab[0], x + '\n')
+                else:
+                    x = " ".join(line[4:])
+                    self.post_message(x + '\n',
+                                      self.tabs['Server Info']['textbox'])
+                    self.n.select(self.tabs['Server Info']['tab'])
+                    self.tabs['Server Info']['entry'].focus_force()
             elif line[1] == '328' or line[1] == '332' or line[1] == '333' or \
                     line[1] == '366':
                 x = " ".join(line[3:])
@@ -412,7 +421,7 @@ class Window(Frame):
 
     def post_to_tab(self, tab_name, message):
         if tab_name not in self.tabs:
-            self.post_message(tab_name.capitalize() + ' ' + message,
+            self.post_message('[' + tab_name + ' ' + message,
                               self.tabs["Server Info"]['textbox'])
         elif tab_name == self.n.tab(self.tabs[tab_name]['tab'], "text"):
             if "No such channel" in self.tabs[tab_name]['textbox'].get("1.0",
