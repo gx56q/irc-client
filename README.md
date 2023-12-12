@@ -23,6 +23,34 @@ cd IRC-client
 pip install -r requirements.txt
 ```
 
+## Usage
+
+Execute the following command to start the IRC-client:
+```sh
+python3 main.py
+```
+
+## Commands
+
+The IRC-client supports the following commands:
+
+#### Join a specific channel on the IRC server.
+```
+/join #channel
+```
+#### Leave the current channel.
+```
+/leave
+```
+#### Show a list of all channels on the connected server
+```
+/channels
+```
+
+## Emoji Conversion Feature
+
+The IRC-client includes a special feature that automatically converts emoticons to Unicode emoji. For example, :) will be displayed as 😃.
+
 
 ## Author
 

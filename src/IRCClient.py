@@ -57,6 +57,7 @@ class IRCClient:
 
     def listen(self):
         (readable, _, _) = select([self.socket], [], [self.socket], 0.1)
+
         if readable:
             read_buffer = ""
             read_buffer += self.get_response()
