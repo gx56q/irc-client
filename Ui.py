@@ -1,7 +1,8 @@
 from tkinter import *
 from tkinter import messagebox, ttk
 from tkinter.scrolledtext import ScrolledText
-from src import IRCClient, emoticons
+import emoticons
+import IRCClient
 import time
 import configparser
 

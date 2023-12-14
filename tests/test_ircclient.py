@@ -4,7 +4,7 @@ import unittest
 from unittest import mock
 from unittest.mock import patch, MagicMock
 
-from src.IRCClient import IRCClient
+from IRCClient import IRCClient
 
 
 class TestIRCClient(unittest.TestCase):
