@@ -123,7 +123,7 @@ class TestIRCClient(unittest.TestCase):
         mock_socket.return_value.recv.return_value = b':irc.example.com 00\r\n'
         response = client.get_response()
 
-        mock_socket.return_value.recv.assert_called_once_with(2048)
+        mock_socket.return_value.recv.assert_called_once_with(1024)
         self.assertEqual(response,
                          ':irc.example.com 00\r\n')
 
@@ -140,7 +140,7 @@ class TestIRCClient(unittest.TestCase):
 
         response = client.get_response()
 
-        mock_socket.return_value.recv.assert_called_once_with(2048)
+        mock_socket.return_value.recv.assert_called_once_with(1024)
 
         self.assertEqual(response, '')
 

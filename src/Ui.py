@@ -48,7 +48,8 @@ class Window(Frame):
                                                       "Username", 10, 1,
                                                       self.username or '')
         self.password_entry = self.create_label_entry(self.user_popup,
-                                                      "Password", 10, 2,
+                                                      "Password (optional)",
+                                                      10, 2,
                                                       self.password or '',
                                                       show="*")
 
@@ -430,7 +431,7 @@ class Window(Frame):
 
     def post_to_tab(self, tab_name, message):
         if tab_name not in self.tabs:
-            self.post_message('[' + tab_name + ' ' + message,
+            self.post_message(tab_name + ' ' + message,
                               self.tabs["Server Info"]['textbox'])
         elif tab_name == self.n.tab(self.tabs[tab_name]['tab'], "text"):
             if "No such channel" in self.tabs[tab_name]['textbox'].get("1.0",

@@ -4,7 +4,7 @@ from src import Ui
 
 def main():
     root = Tk()
-    app = Ui.Window(root)
+    Ui.Window(root)
     root.mainloop()
 
 
