@@ -4,15 +4,16 @@ import unittest
 from unittest import mock
 from unittest.mock import patch, MagicMock
 
-from IRCClient import IRCClient
+import IRCClient
 
 
 class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_connect(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
         mock_socket.assert_called_once_with(socket.AF_INET, socket.SOCK_STREAM)
         mock_socket.return_value.connect.assert_called_once_with(
@@ -20,8 +21,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_auth(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         with patch.object(client, 'send_data') as mock_send_data:
@@ -34,8 +36,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_disconnect(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         with patch.object(client, 'send_data') as mock_send_data:
@@ -46,8 +49,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_send_message(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         with patch.object(client, 'send_data') as mock_send_data:
@@ -60,8 +64,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_join_channel(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         with patch.object(client, 'send_data') as mock_send_data:
@@ -71,8 +76,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_leave_channel(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         with patch.object(client, 'send_data') as mock_send_data:
@@ -82,8 +88,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_start_listening(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         with patch.object(threading, 'Thread') as mock_thread:
@@ -94,8 +101,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_send_data_with_message(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         client.send_data('PRIVMSG', '#test_channel :Hello, world!')
@@ -105,8 +113,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_send_data_no_message(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         client.send_data('TEST')
@@ -116,8 +125,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_get_response(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         mock_socket.return_value.recv.return_value = b':irc.example.com 00\r\n'
@@ -134,8 +144,9 @@ class TestIRCClient(unittest.TestCase):
                                            "reason"))
         mock_socket.return_value.recv = mock_recv
 
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         client.connect()
 
         response = client.get_response()
@@ -146,8 +157,9 @@ class TestIRCClient(unittest.TestCase):
 
     @patch('socket.socket')
     def test_get_channels(self, mock_socket):
-        client = IRCClient(username='test_user', server='irc.example.com',
-                           port=6667)
+        client = IRCClient.IRCClient(username='test_user',
+                                     server='irc.example.com',
+                                     port=6667)
         with patch.object(client, 'send_data') as mock_send_data:
             client.get_channels()
         mock_send_data.assert_called_once_with('LIST')
