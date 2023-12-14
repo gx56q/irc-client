@@ -5,7 +5,7 @@ from select import select
 
 
 class IRCClient:
-    def __init__(self, username, server, port=6667, callback=None):
+    def __init__(self, username, server, port=6668, callback=None):
         self.message_callback = callback
         self.listen_thread = None
         self.server = server
@@ -36,7 +36,7 @@ class IRCClient:
 
     def get_response(self):
         try:
-            return self.socket.recv(2048).decode('utf-8', errors='ignore')
+            return self.socket.recv(1024).decode('utf-8', errors='ignore')
         except UnicodeDecodeError:
             return ''
 
@@ -56,21 +56,22 @@ class IRCClient:
         self.send_data('PART', channel_name)
 
     def listen(self):
-        (readable, _, _) = select([self.socket], [], [self.socket], 0.1)
+        while True:
+            (readable, _, _) = select([self.socket], [], [self.socket], 0.1)
 
-        if readable:
-            read_buffer = ""
-            read_buffer += self.get_response()
-            temp = str.split(read_buffer, "\n")
-            temp.pop()
-            for line in temp:
-                line = str.rstrip(line)
-                line = str.split(line)
-                if len(line) >= 1:
-                    if line[0] == 'PING':
-                        self.send_data('PONG', line[1])
-                    else:
-                        self.message_callback(line)
+            if readable:
+                read_buffer = ""
+                read_buffer += self.get_response()
+                temp = str.split(read_buffer, "\n")
+                temp.pop()
+                for line in temp:
+                    line = str.rstrip(line)
+                    line = str.split(line)
+                    if len(line) >= 1:
+                        if line[0] == 'PING':
+                            self.send_data('PONG', line[1])
+                        else:
+                            self.message_callback(line)
 
     def start_listening(self):
         self.listen_thread = threading.Thread(target=self.listen)
